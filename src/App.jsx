@@ -5,6 +5,7 @@ import {
   collection,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -13,6 +14,8 @@ function App() {
   const [newMovieTitle, setNewMovieTitle] = useState("");
   const [newMovieReleaseDate, setNewMovieReleaseDate] = useState(0);
   const [newMovieReceivedAnOscar, setNewMovieReceivedAnOscar] = useState(false);
+
+  const [updatedTitle, setUpdatedTitle] = useState("");
 
   const getMovies = async () => {
     try {
@@ -56,6 +59,12 @@ function App() {
     }
   };
 
+  const updateMovieTitle = async (id) => {
+    const movieDoc = doc(db, "movies", id);
+    await updateDoc(movieDoc, { title: updatedTitle }, { merge: true });
+    getMovies();
+  };
+
   return (
     <>
       <Auth />
@@ -87,6 +96,14 @@ function App() {
             <p>Released Date: {movie.releasedDate}</p>
 
             <button onClick={() => deleteMovie(movie.id)}>Delete</button>
+
+            <input
+              placeholder="Edit title"
+              onChange={(e) => setUpdatedTitle(e.target.value)}
+            />
+            <button onClick={() => updateMovieTitle(movie.id)}>
+              Update title
+            </button>
           </div>
         ))}
       </div>
