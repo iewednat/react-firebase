@@ -1,5 +1,5 @@
 import { Auth } from "./components/auth";
-import { db } from "./config/firebase";
+import { db, auth } from "./config/firebase";
 import {
   getDocs,
   collection,
@@ -32,7 +32,7 @@ function App() {
   };
   useEffect(() => {
     getMovies();
-  }, []);
+  }, [getMovies]);
 
   const onSubmitMovie = async () => {
     try {
@@ -40,13 +40,12 @@ function App() {
         title: newMovieTitle,
         releasedDate: newMovieReleaseDate,
         receivedAnOscar: newMovieReceivedAnOscar,
+        userId: auth?.currentUser?.uid,
       });
-      getMovies();
     } catch (err) {
       console.error(err);
     }
   };
-  console.log(newMovieTitle, newMovieReleaseDate, newMovieReceivedAnOscar);
 
   const deleteMovie = async (id) => {
     console.log(id);
