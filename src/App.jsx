@@ -1,6 +1,12 @@
 import { Auth } from "./components/auth";
 import { db } from "./config/firebase";
-import { getDocs, collection, addDoc } from "firebase/firestore";
+import {
+  getDocs,
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 function App() {
   const [movieList, setMovieList] = useState([]);
@@ -8,20 +14,20 @@ function App() {
   const [newMovieReleaseDate, setNewMovieReleaseDate] = useState(0);
   const [newMovieReceivedAnOscar, setNewMovieReceivedAnOscar] = useState(false);
 
+  const getMovies = async () => {
+    try {
+      const data = await getDocs(collection(db, "movies"));
+      const filteredData = data.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      // console.log(filteredData);
+      setMovieList(filteredData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   useEffect(() => {
-    const getMovies = async () => {
-      try {
-        const data = await getDocs(collection(db, "movies"));
-        const filteredData = data.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
-        // console.log(filteredData);
-        setMovieList(filteredData);
-      } catch (err) {
-        console.error(err);
-      }
-    };
     getMovies();
   }, []);
 
@@ -32,11 +38,23 @@ function App() {
         releasedDate: newMovieReleaseDate,
         receivedAnOscar: newMovieReceivedAnOscar,
       });
+      getMovies();
     } catch (err) {
       console.error(err);
     }
   };
   console.log(newMovieTitle, newMovieReleaseDate, newMovieReceivedAnOscar);
+
+  const deleteMovie = async (id) => {
+    console.log(id);
+    try {
+      const movieDoc = doc(db, "movies", id);
+      await deleteDoc(movieDoc);
+      getMovies();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <>
@@ -63,10 +81,12 @@ function App() {
       <div>
         {movieList.map((movie) => (
           <div key={movie.id}>
-            <h1 style={{ color: movie.receivedAnOscar ? "green" : "blue" }}>
+            <h1 style={{ color: movie.receivedAnOscar ? "green" : "red" }}>
               Title: {movie.title}
             </h1>
             <p>Released Date: {movie.releasedDate}</p>
+
+            <button onClick={() => deleteMovie(movie.id)}>Delete</button>
           </div>
         ))}
       </div>
